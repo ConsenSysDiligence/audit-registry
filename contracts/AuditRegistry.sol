@@ -20,6 +20,7 @@ contract AuditRegistry {
 
     event Added(address owner, address target, bytes32 codeHash);
     event Removed(address owner, address target, bytes32 codeHash);
+    event Withdrawal(address sender, address recipient, uint256 value);
 
     constructor() {
         admin = msg.sender;
@@ -111,7 +112,9 @@ contract AuditRegistry {
     }
 
     function withdraw() public {
-        (bool success, ) = admin.call{value: address(this).balance}("");
+        uint256 balance = address(this).balance;
+        (bool success, ) = admin.call{value: balance}("");
         require(success, "Failed to withdraw contract balance");
+        emit Withdrawal(msg.sender, admin, balance);
     }
 }
