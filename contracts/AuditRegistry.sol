@@ -15,12 +15,15 @@ contract AuditRegistry {
         0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
     uint256 constant SUBMISSION_FEE = 0.1 ether;
 
+    address public admin;
     mapping(address => Artifact[]) public registry;
 
     event Added(address owner, address target, bytes32 codeHash);
     event Removed(address owner, address target, bytes32 codeHash);
 
-    constructor() {}
+    constructor() {
+        admin = msg.sender;
+    }
 
     function getCodeHash(address target) public view returns (bytes32) {
         bytes32 codeHash;
@@ -105,5 +108,10 @@ contract AuditRegistry {
         artifactList.pop();
 
         emit Removed(msg.sender, target, a.codeHash);
+    }
+
+    function withdraw() public {
+        (bool success, ) = admin.call{value: address(this).balance}("");
+        require(success, "Failed to withdraw contract balance");
     }
 }
