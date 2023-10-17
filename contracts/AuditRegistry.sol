@@ -13,6 +13,7 @@ struct Artifact {
 contract AuditRegistry {
     bytes32 constant EMPTY_HASH =
         0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+    uint256 constant SUBMISSION_FEE = 0.1 ether;
 
     mapping(address => Artifact[]) public registry;
 
@@ -69,7 +70,8 @@ contract AuditRegistry {
         string calldata reportLink,
         string calldata company,
         address[] calldata related
-    ) public {
+    ) public payable {
+        require(msg.value == SUBMISSION_FEE, "Invalid submission fee");
         require(
             startsWith("https://", reportLink) ||
                 startsWith("ipfs://", reportLink),
