@@ -13,13 +13,18 @@ struct Artifact {
 contract AuditRegistry {
     bytes32 constant EMPTY_HASH =
         0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+    uint256 constant SUBMISSION_FEE = 0.1 ether;
 
+    address public admin;
     mapping(address => Artifact[]) public registry;
 
     event Added(address owner, address target, bytes32 codeHash);
     event Removed(address owner, address target, bytes32 codeHash);
+    event Withdrawal(address sender, address recipient, uint256 value);
 
-    constructor() {}
+    constructor() {
+        admin = msg.sender;
+    }
 
     function getCodeHash(address target) public view returns (bytes32) {
         bytes32 codeHash;
@@ -69,7 +74,8 @@ contract AuditRegistry {
         string calldata reportLink,
         string calldata company,
         address[] calldata related
-    ) public {
+    ) public payable {
+        require(msg.value == SUBMISSION_FEE, "Invalid submission fee");
         require(
             startsWith("https://", reportLink) ||
                 startsWith("ipfs://", reportLink),
@@ -103,5 +109,12 @@ contract AuditRegistry {
         artifactList.pop();
 
         emit Removed(msg.sender, target, a.codeHash);
+    }
+
+    function withdraw() public {
+        uint256 balance = address(this).balance;
+        (bool success, ) = admin.call{value: balance}("");
+        require(success, "Failed to withdraw contract balance");
+        emit Withdrawal(msg.sender, admin, balance);
     }
 }
