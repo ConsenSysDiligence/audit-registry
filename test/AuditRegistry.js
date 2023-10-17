@@ -112,4 +112,25 @@ describe("Registry contract", function () {
     const addTx = this.registry.connect(owner).add(this.testToken, this.invalidReportLink, this.expectedCompany, [], {value: ethers.utils.parseEther("0.5")});
     await expect(addTx).to.be.revertedWith("Invalid submission fee");
   });
+
+  it("allows anyone to withdraw to the admin", async function () {
+    [owner, addr2] = await ethers.getSigners();
+
+    const addTx = await this.addValid();
+    await addTx.wait();
+
+    const balanceBefore = await ethers.provider.getBalance(owner.address);
+
+    const withdrawTx = await this.registry.connect(addr2).withdraw();
+    const receipt = await withdrawTx.wait();
+
+    expect(receipt.events).to.have.length.of(1);
+    expect(receipt.events[0].event).to.be.equals("Withdrawal");
+    expect(receipt.events[0].args.recipient).to.be.equals(owner.address);
+    expect(receipt.events[0].args.sender).to.be.equals(addr2.address);
+    expect(receipt.events[0].args.value).to.be.equals("100000000000000000");
+
+    const balanceAfter = await ethers.provider.getBalance(owner.address);
+    expect(balanceBefore).to.be.lessThan(balanceAfter);
+  });
 });
