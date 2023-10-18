@@ -148,6 +148,8 @@
 </template>
 
 <script setup lang="ts">
+import { REGISTRY_ADDRESS } from '@/constants';
+import { store } from "@/store";
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -157,10 +159,16 @@ const contractAddress = ref();
 const codehash = ref('0x73472647374279843283879');
 
 onMounted(() => {
-  console.log(route.params);
   contractAddress.value = route.params.address;
-  //fetchAuditStatus();
+  fetchAuditStatus(contractAddress.value);
 });
+
+const fetchAuditStatus = function(address) {
+    console.log(store.publicClients);
+    // use MM provider to call artifacts view for target
+    // parse result and give it format as below
+    // set audits.value
+}
 
 const audits = ref([
   // Replace this with your actual data

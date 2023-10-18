@@ -11,11 +11,13 @@ import {
   watchNetwork
 } from "@wagmi/core";
 import { publicProvider } from "@wagmi/core/providers/public";
-import { store } from "@/store"
+import { infuraProvider } from "@wagmi/core/providers/infura";
+import { store } from "@/store";
+import { INFURA_KEY } from "@/constants";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet],
-  [publicProvider()],
+  [infuraProvider({apiKey: INFURA_KEY}), publicProvider()],
 );
 
 const injectedConnector = new InjectedConnector();
@@ -35,6 +37,8 @@ const connectWallet = async () => {
     });
     store.address = account;
     console.log(`Wallet ${account} connected`);
+    console.log(config);
+    store.publicClients = config.publicClients;
     await switchNetwork({
       chainId: SEPOLIA_CHAIN_ID,
     });
@@ -55,6 +59,7 @@ watchAccount((account) => {
 
 watchNetwork((network) => {
   store.chainId = network.chain.id
+  store.publicClients = config.publicClients;
 })
 </script>
 
